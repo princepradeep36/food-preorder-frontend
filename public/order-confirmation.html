@@ -22,14 +22,15 @@
     </style>
 </head>
 <body>
-    <h1>Your Order Summary</h1>
+    <h1>Order Summary</h1>
     <div id="order-details">
         </div>
-    <button onclick="window.close()">Close</button>
+    <button id="confirmAndCloseButton">Confirm and Close</button>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const orderDetailsDiv = document.getElementById('order-details');
-            const orderData = JSON.parse(sessionStorage.getItem('finalOrder'));
+            const confirmAndCloseButton = document.getElementById('confirmAndCloseButton');
+            const orderData = JSON.parse(sessionStorage.getItem('currentOrder'));
 
             if (orderData) {
                 let summaryHTML = `<h2>Customer Information</h2>
@@ -59,10 +60,33 @@
 
                 summaryHTML += `<h2>Total Order Amount: ${totalAmount} SEK</h2>`;
                 orderDetailsDiv.innerHTML = summaryHTML;
+
+                confirmAndCloseButton.addEventListener('click', function() {
+                    // Send the order to the backend
+                    fetch('/api/submit-order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(orderData), // Send the data from sessionStorage
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Server response:', data);
+                        alert('Order submitted! You will receive a confirmation shortly.');
+                        window.close(); // Close the summary window
+                        sessionStorage.removeItem('currentOrder'); // Clean up
+                    })
+                    .catch(error => {
+                        console.error('Error sending order:', error);
+                        alert('An error occurred while submitting your order.');
+                    });
+                });
+
             } else {
                 orderDetailsDiv.innerHTML = '<p>No order details found.</p>';
             }
-            // Assuming vendorsData is available (you might need to pass it or redefine it)
+
             const vendorsData = [
                 { name: "Vendor A", swish: "1234567890" },
                 { name: "Vendor B", swish: "0987654321" },

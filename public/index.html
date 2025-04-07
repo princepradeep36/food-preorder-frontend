@@ -115,7 +115,7 @@
         function submitOrder() {
             const nameInput = document.getElementById('name');
             const phoneInput = document.getElementById('phone');
-            const name = nameInput.value.trim(); // Trim whitespace
+            const name = nameInput.value.trim();
             const phone = phoneInput.value.trim();
 
             if (!name) {
@@ -164,7 +164,9 @@
             }
 
             sessionStorage.setItem('currentOrder', JSON.stringify(order));
-            displayOrderSummary(order); // Keep this if you have a summary on the same page
+            window.location.href = 'order-confirmation.html'; // Navigate to summary page
+
+            // The confirmOrder() function will now be triggered from the order-confirmation.html page
         }
 
         function displayOrderSummary(order) {
