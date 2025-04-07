@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Preorder</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .vendor-section {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .food-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .food-item label {
+            flex-grow: 1;
+        }
+
+        .food-item input[type="number"] {
+            width: 60px;
+        }
+
+        #order-summary {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Preorder Your Food</h1>
+
+    <div id="customer-info">
+        <h2>Your Information</h2>
+        <label for="name">Name:</label>
+        <input type="text" id="name" required><br><br>
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" required><br><br>
+    </div>
+
+    <div id="vendors">
+    </div>
+
+    <button onclick="submitOrder()">Submit Order</button>
+
+    <div id="order-summary" style="display: none;">
+        <h2>Order Summary</h2>
+        <div id="summary-details"></div>
+        <button onclick="confirmOrder()">Confirm Order</button>
+    </div>
+
+    <script>
+        const vendorsData = [
+            {
+                name: "Vendor A",
+                swish: "1234567890",
+                menu: [
+                    { name: "Burger", price: 80 },
+                    { name: "Fries", price: 30 },
+                    { name: "Soda", price: 20 }
+                ]
+            },
+            {
+                name: "Vendor B",
+                swish: "0987654321",
+                menu: [
+                    { name: "Pizza Slice", price: 50 },
+                    { name: "Salad", price: 60 },
+                    { name: "Juice", price: 25 }
+                ]
+            },
+            // Add more vendors and their menus here
+        ];
+
+        const vendorsContainer = document.getElementById('vendors');
+        const orderSummaryDiv = document.getElementById('order-summary');
+        const summaryDetailsDiv = document.getElementById('summary-details');
+
+        function renderVendors() {
+            vendorsData.forEach((vendor, index) => {
+                const vendorDiv = document.createElement('div');
+                vendorDiv.classList.add('vendor-section');
+                vendorDiv.innerHTML = `<h3>${vendor.name}</h3>`;
+
+                vendor.menu.forEach(item => {
+                    const foodItemDiv = document.createElement('div');
+                    foodItemDiv.classList.add('food-item');
+                    foodItemDiv.innerHTML = `
+                        <label for="${vendor.name}-${item.name}">${item.name} (${item.price} SEK):</label>
+                        <input type="number" id="${vendor.name}-${item.name}" name="${vendor.name}-${item.name}" value="0" min="0">
+                    `;
+                    vendorDiv.appendChild(foodItemDiv);
+                });
+
+                vendorsContainer.appendChild(vendorDiv);
+            });
+        }
+
+        renderVendors();
+
+        function submitOrder() {
+            const nameInput = document.getElementById('name');
+            const phoneInput = document.getElementById('phone');
+            const name = nameInput.value;
+            const phone = phoneInput.value;
+
+            if (!name || !phone) {
+                alert('Please enter your name and phone number.');
+                return;
+            }
+
+            const order = {
+                customer: { name, phone },
+                items: {}
+            };
+            let hasItems = false;
+
+            vendorsData.forEach(vendor => {
+                const vendorItems = {};
+                vendor.menu.forEach(item => {
+                    const quantityInput = document.getElementById(`${vendor.name}-${item.name}`);
+                    const quantity = parseInt(quantityInput.value);
+                    if (quantity > 0) {
+                        vendorItems[item.name] = { quantity, price: item.price };
+                        hasItems = true;
+                    }
+                    // Reset the quantity input after capturing the value
+                    quantityInput.value = 0;
+                });
+                if (Object.keys(vendorItems).length > 0) {
+                    order.items[vendor.name] = vendorItems;
+                }
+            });
+
+            if (!hasItems) {
+                alert('Please select at least one item to order.');
+                return;
+            }
+
+            displayOrderSummary(order);
+
+            // Optionally clear the customer info as well
+            // nameInput.value = '';
+            // phoneInput.value = '';
+        }
+
+        function displayOrderSummary(order) {
+            summaryDetailsDiv.innerHTML = '';
+            let totalAmount = 0;
+            let summaryHTML = '';
+
+            for (const vendorName in order.items) {
+                const vendor = vendorsData.find(v => v.name === vendorName);
+                if (vendor) {
+                    let vendorTotal = 0;
+                    let vendorItemsHTML = '<ul>';
+                    for (const itemName in order.items[vendorName]) {
+                        const item = order.items[vendorName][itemName];
+                        const itemTotal = item.quantity * item.price;
+                        vendorTotal += itemTotal;
+                        vendorItemsHTML += `<li>${itemName} x ${item.quantity} = ${itemTotal} SEK</li>`;
+                    }
+                    vendorItemsHTML += '</ul>';
+                    summaryHTML += `
+                        <h3>${vendorName}</h3>
+                        ${vendorItemsHTML}
+                        <p><strong>Total for ${vendorName}: ${vendorTotal} SEK</strong></p>
+                        <p><strong>Swish: ${vendor.swish}</strong></p>
+                        <hr>
+                    `;
+                    totalAmount += vendorTotal;
+                }
+            }
+
+            summaryHTML += `<h2>Total Order Amount: ${totalAmount} SEK</h2>`;
+            summaryDetailsDiv.innerHTML = summaryHTML;
+            orderSummaryDiv.style.display = 'block';
+            // Store the order data temporarily (you'd send this to the server later)
+            sessionStorage.setItem('currentOrder', JSON.stringify(order));
+        }
+
+        function confirmOrder() {
+            const orderData = sessionStorage.getItem('currentOrder');
+            if (orderData) {
+                // Store the final order data for the confirmation page
+                sessionStorage.setItem('finalOrder', orderData);
+
+                fetch('https://food-preorder-backend.onrender.com/api/submit-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: orderData,
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Server response:', data);
+                        // Open the order confirmation page in a new tab/window
+                        window.open('order-confirmation.html', '_blank');
+                        // Optionally clear the current order data
+                        sessionStorage.removeItem('currentOrder');
+                    })
+                    .catch(error => {
+                        console.error('Error sending order:', error);
+                        alert('An error occurred while submitting your order.');
+                    });
+            } else {
+                alert('No order to confirm.');
+            }
+        }
+    </script>
+</body>
+
+</html>
