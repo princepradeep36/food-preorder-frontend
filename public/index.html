@@ -115,11 +115,24 @@
         function submitOrder() {
             const nameInput = document.getElementById('name');
             const phoneInput = document.getElementById('phone');
-            const name = nameInput.value;
-            const phone = phoneInput.value;
+            const name = nameInput.value.trim(); // Trim whitespace
+            const phone = phoneInput.value.trim();
 
-            if (!name || !phone) {
-                alert('Please enter your name and phone number.');
+            if (!name) {
+                alert('Please enter your name.');
+                nameInput.focus();
+                return;
+            }
+
+            if (!phone) {
+                alert('Please enter your phone number.');
+                phoneInput.focus();
+                return;
+            }
+
+            if (!/^[0-9]{10}$/.test(phone)) {
+                alert('Please enter a valid 10-digit phone number.');
+                phoneInput.focus();
                 return;
             }
 
@@ -138,7 +151,6 @@
                         vendorItems[item.name] = { quantity, price: item.price };
                         hasItems = true;
                     }
-                    // Reset the quantity input after capturing the value
                     quantityInput.value = 0;
                 });
                 if (Object.keys(vendorItems).length > 0) {
@@ -151,11 +163,8 @@
                 return;
             }
 
-            displayOrderSummary(order);
-
-            // Optionally clear the customer info as well
-            // nameInput.value = '';
-            // phoneInput.value = '';
+            sessionStorage.setItem('currentOrder', JSON.stringify(order));
+            displayOrderSummary(order); // Keep this if you have a summary on the same page
         }
 
         function displayOrderSummary(order) {
