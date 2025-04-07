@@ -73,7 +73,7 @@
                 orderDetailsDiv.innerHTML = summaryHTML;
 
                 confirmAndCloseButton.addEventListener('click', function () {
-                    fetch('/api/submit-order', {
+                    fetch('https://food-preorder-backend.onrender.com/api/submit-order', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
