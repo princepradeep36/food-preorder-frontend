@@ -46,9 +46,10 @@
     <div id="customer-info">
         <h2>Your Information</h2>
         <label for="name">Name:</label>
-        <input type="text" id="name" required><br><br>
+        <input type="text" id="name" name="name" required><br><br>
+
         <label for="phone">Phone Number:</label>
-        <input type="tel" id="phone" required><br><br>
+        <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}"><br><br>
     </div>
 
     <div id="vendors">
