@@ -31,6 +31,7 @@
             const orderDetailsDiv = document.getElementById('order-details');
             const confirmAndCloseButton = document.getElementById('confirmAndCloseButton');
             const orderData = JSON.parse(sessionStorage.getItem('currentOrder'));
+            console.log('Order Data in confirmation:', orderData); // ADD THIS
 
             if (orderData) {
                 let summaryHTML = `<h2>Customer Information</h2>
