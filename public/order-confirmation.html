@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,11 +10,13 @@
             font-family: sans-serif;
             margin: 20px;
         }
+
         #order-details {
             border: 1px solid #ccc;
             padding: 15px;
             margin-bottom: 15px;
         }
+
         .vendor-summary {
             margin-bottom: 10px;
             border-bottom: 1px dashed #eee;
@@ -21,17 +24,24 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Order Summary</h1>
     <div id="order-details">
-        </div>
+    </div>
     <button id="confirmAndCloseButton">Confirm and Close</button>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const orderDetailsDiv = document.getElementById('order-details');
             const confirmAndCloseButton = document.getElementById('confirmAndCloseButton');
             const orderData = JSON.parse(sessionStorage.getItem('currentOrder'));
-            console.log('Order Data in confirmation:', orderData); // ADD THIS
+
+            // Declare and initialize vendorsData BEFORE the loop
+            const vendorsData = [
+                { name: "Vendor A", swish: "1234567890" },
+                { name: "Vendor B", swish: "0987654321" },
+                // Add all your vendors with their Swish numbers here
+            ];
 
             if (orderData) {
                 let summaryHTML = `<h2>Customer Information</h2>
@@ -42,7 +52,7 @@
 
                 for (const vendorName in orderData.items) {
                     const vendorItems = orderData.items[vendorName];
-                    const vendorInfo = vendorsData.find(v => v.name === vendorName);
+                    const vendorInfo = vendorsData.find(v => v.name === vendorName); // Now vendorsData is defined
                     let vendorTotal = 0;
                     summaryHTML += `<div class="vendor-summary"><h3>${vendorName}</h3><ul>`;
                     for (const itemName in vendorItems) {
@@ -62,38 +72,32 @@
                 summaryHTML += `<h2>Total Order Amount: ${totalAmount} SEK</h2>`;
                 orderDetailsDiv.innerHTML = summaryHTML;
 
-                confirmAndCloseButton.addEventListener('click', function() {
-                    // Send the order to the backend
+                confirmAndCloseButton.addEventListener('click', function () {
                     fetch('/api/submit-order', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify(orderData), // Send the data from sessionStorage
+                        body: JSON.stringify(orderData),
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Server response:', data);
-                        alert('Order submitted! You will receive a confirmation shortly.');
-                        window.close(); // Close the summary window
-                        sessionStorage.removeItem('currentOrder'); // Clean up
-                    })
-                    .catch(error => {
-                        console.error('Error sending order:', error);
-                        alert('An error occurred while submitting your order.');
-                    });
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Server response:', data);
+                            alert('Order submitted! You will receive a confirmation shortly.');
+                            window.close();
+                            sessionStorage.removeItem('currentOrder');
+                        })
+                        .catch(error => {
+                            console.error('Error sending order:', error);
+                            alert('An error occurred while submitting your order.');
+                        });
                 });
 
             } else {
                 orderDetailsDiv.innerHTML = '<p>No order details found.</p>';
             }
-
-            const vendorsData = [
-                { name: "Vendor A", swish: "1234567890" },
-                { name: "Vendor B", swish: "0987654321" },
-                // Add all your vendors with their Swish numbers here
-            ];
         });
     </script>
 </body>
+
 </html>
