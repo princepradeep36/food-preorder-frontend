@@ -95,8 +95,8 @@
                         .then(response => response.json())
                         .then(data => {
                             console.log('Server response:', data);
-                            alert('Order submitted! Your order number is: ' + data.orderNumber); // Display the order number
-                            orderNumberDisplay.textContent = 'Your Order Number: ' + data.orderNumber; // Optionally display it on the page
+                            alert('Order submitted! Your order ID is: ' + data.orderId);
+                            orderNumberDisplay.textContent = 'Your Order ID: ' + data.orderId;
                             window.close();
                             sessionStorage.removeItem('currentOrder');
                         })
