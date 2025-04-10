@@ -29,11 +29,13 @@
     <h1>Order Summary</h1>
     <div id="order-details">
     </div>
-    <button id="confirmAndCloseButton">Confirm and Close</button>
+    <p id="orderNumberDisplay" style="font-weight: bold;"></p> <button id="confirmAndCloseButton">Confirm and
+        Close</button>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const orderDetailsDiv = document.getElementById('order-details');
             const confirmAndCloseButton = document.getElementById('confirmAndCloseButton');
+            const orderNumberDisplay = document.getElementById('orderNumberDisplay');
             const orderData = JSON.parse(sessionStorage.getItem('currentOrder'));
 
             // Declare and initialize vendorsData BEFORE the loop
@@ -49,7 +51,7 @@
                 { name: "Malar Snacks Stall", swish: "0761257938" },
                 { name: "Tasty Kitchen", swish: "0722045435" },
                 { name: "Ja Moon Snack Stall", swish: "0764472653" },
-                { name: "Srini's Snack Stall",swish: "0734846250" }
+                { name: "Srini's Snack Stall", swish: "0734846250" }
                 // Add all your vendors with their Swish numbers here
             ];
 
@@ -93,7 +95,8 @@
                         .then(response => response.json())
                         .then(data => {
                             console.log('Server response:', data);
-                            alert('Order submitted! You will receive a confirmation shortly.');
+                            alert('Order submitted! Your order number is: ' + data.orderNumber); // Display the order number
+                            orderNumberDisplay.textContent = 'Your Order Number: ' + data.orderNumber; // Optionally display it on the page
                             window.close();
                             sessionStorage.removeItem('currentOrder');
                         })
